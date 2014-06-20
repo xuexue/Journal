@@ -24,6 +24,7 @@
 
 (define user-cookie-name "usercookiething")
 (define user-cookie-salt #"Blah")
+(define user-cookie-blank (logout-id-cookie user-cookie-name))
 
 (define (make-cookie-from-user user)
   (define email (user-email user))
@@ -49,8 +50,13 @@
 
 (define (home) "You should be logged in")
 
-(define (signup)
-  (redir-to #"/home"))
+(define (signup req)
+  (define user (get-user-from-cookie req))
+  (match user
+    ((nothing)
+      "TODO")
+    ((just user)
+      (redir-to #"/home"))))
 
 (define (login-post req)
   (define email (params req 'email))
@@ -61,12 +67,16 @@
       (include-template "templates/login.html"))
     ((just user)
       (define new-user-cookie (make-cookie-from-user user))
-      (redir-to #"/" (list (cookie->header new-user-cookie))))))
+      (redir-to #"/home" (list (cookie->header new-user-cookie))))))
+
+(define (logout req)
+  (redir-to #"/" (list (cookie->header user-cookie-blank))))
 
 (get "/" index)
 (get "/signup" signup)
 (get "/login" login)
 (post "/login" login-post)
 (get "/home" home)
+(get "/logout" logout)
 
 (run)
