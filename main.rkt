@@ -4,24 +4,45 @@
     (planet dmac/spin)
     gregr-misc/maybe
     gregr-misc/record
+    web-server/http/cookie
     web-server/http/id-cookie
     web-server/templates
 )
 
 ; (define user (get-user (params req 'email) (params req 'password)))
 
-(record user id email passwd)
+(record user id email)
 
-(define (redir-to place)
-  (define h (list (header #"Location" place)))
-  `(302 ,h "Redirecting."))
+(define (redir-to place (headers '()))
+  (define location (header #"Location" place))
+  `(302 ,(cons location headers) "Redirecting."))
 
-(define (get-user email passwd)
-    (just (user 1234 email passwd))) ; this is suppose to be a db call
+(define (get-user email)
+    (if (eq? email #f)
+      (nothing)
+      (just (user 1234 email)))) ; this is suppose to be a db call
+
+(define user-cookie-name "usercookiething")
+(define user-cookie-salt #"Blah")
+
+(define (make-cookie-from-user user)
+  (define email (user-email user))
+  (displayln email)
+  (make-id-cookie user-cookie-name user-cookie-salt email))
+
+(define (get-user-from-cookie req)
+  (define email (request-id-cookie user-cookie-name user-cookie-salt req))
+  (displayln email)
+  (get-user email))
 
 (define (index req)
-  (define logintext "not logged in")
-  (include-template "templates/index.html"))
+  (define user (get-user-from-cookie req))
+  (match user
+    ((nothing)
+      (define logintext "not logged in")
+      (include-template "templates/index.html"))
+    ((just user)
+      (redir-to #"/home"))))
 
 (define (login req)
   (include-template "templates/login.html"))
@@ -32,11 +53,15 @@
   (redir-to #"/home"))
 
 (define (login-post req)
-  (displayln "")
-  (displayln (params req 'email))
-  (displayln (params req 'password))
-  (displayln "")
-  "Not implemented")
+  (define email (params req 'email))
+  (define password (params req 'password))
+  (define user (get-user email)) ;todo: check password?
+  (match user
+    ((nothing)
+      (include-template "templates/login.html"))
+    ((just user)
+      (define new-user-cookie (make-cookie-from-user user))
+      (redir-to #"/" (list (cookie->header new-user-cookie))))))
 
 (get "/" index)
 (get "/signup" signup)
