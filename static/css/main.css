@@ -51,8 +51,10 @@ body {
 .main-content {
     width: 590px;
     float: left;
+    display: block;
 }
 .main-call-to-action {
     width: 390px;
     float: left;
+    display: block;
 }
