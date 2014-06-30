@@ -70,7 +70,7 @@
   (define user (get-user-from-cookie req))
   (match user
     ((nothing)
-      "TODO")
+     (response/xexpr "TODO"))
     ((just user)
       (redir-to "/home"))))
 
