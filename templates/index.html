@@ -5,8 +5,61 @@
         <link rel="stylesheet" type="text/css" href="/css/main.css" />
     </head>
     <body>
-        <div>
-            Hello
+        <div class="container">
+            <div class="header">
+                <div class="header-title">
+                    Things I Learned
+                </div>
+                <div class="header-right">
+                    <div class="header-login-prompt"> Already have an account?</div>
+                    <form action="/login" method="post">
+                        <div class="header-login-col">
+                            <label for="email">Email</label><br/>
+                            <input type="text" name="email" />
+                        </div>
+                        <div class="header-login-col">
+                            <label for="password">Password</label><br />
+                            <input type="password" name="password" />
+                        </div>
+                        <div class="header-login-col">
+                            <br/>
+                            <input type="submit" value="OK" />
+                        </div>
+                    </form>
+                </div>
+                <div class="clearboth">
+                </div>
+            </div>
+            <div class="main">
+                <div class="main-content">
+                    <img src="http://placehold.it/300x300" />
+                </div>
+                <div class="main-call-to-action">
+                    "Things I Learned" sends you an email every day and asks you
+                    what you learned that day. It is the easiest way to
+                    keep track of your progress through life.
+
+                    <button>
+                        Sign up now!
+                    </button>
+                </div>
+                <div class="bottom">
+                    Why we're better than all our competitors.
+                    <br /><br />
+                    ...a journal: pen and paper are very last century. You might
+                    not always have your journal on hand. Nor are journals fault
+                    tolerant: they can be lost, stolen, or caught fire. They
+                    also do not provide the same search functionality as their
+                    electronic counterparts.
+                    <br /><br />
+                    ...textpad: your harddrive may fail at a probability
+                    slightly higher than ours. Depending on how technical you
+                    are, your hard drive might also be harder to access when you
+                    are away from your computer. Plus, no one reminds you to write
+                    in it every day.
+                    <br /><br />
+                </div>
+            </div>
         </div>
     </body>
 </html>

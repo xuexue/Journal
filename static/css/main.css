@@ -1,4 +1,58 @@
 body {
-    font-size: 50px;
-    color: blue;
+    font-family: arial;
+}
+.clearboth {
+    display: block;
+    clear: both;
+}
+
+
+.container {
+    width: 1000px;
+    margin-bottom: 200px;
+    margin: auto;
+}
+.header {
+    background-color: #eee;
+    width: 100%;
+    height: 95px;
+}
+
+.header-title {
+    font-size: 2.5em;
+    color: steelblue;
+    float: left;
+    margin: 10px;
+    margin-top: 20px;
+}
+.header-right {
+    float: right;
+    margin: 10px;
+}
+.header-login-prompt {
+    margin-top: 10px;
+    margin-left: 2px;
+    margin-bottom: 3px;
+    font-size: 0.7em;
+    color: #789;
+}
+.header-login-col {
+    float: left;
+}
+.header-login-col label {
+    font-weight: bold;
+    font-size: 0.7em;
+    margin-left: 2px;
+}
+
+.main {
+    margin: 10px;
+}
+.main-content {
+    width: 590px;
+    float: left;
+}
+.main-call-to-action {
+    width: 390px;
+    float: left;
 }
