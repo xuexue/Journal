@@ -1,12 +1,18 @@
 #lang racket
 
 (require
-    (planet dmac/spin)
     gregr-misc/maybe
     gregr-misc/record
+    net/url
+    web-server/dispatch
     web-server/http/cookie
     web-server/http/id-cookie
+    web-server/http/redirect
+    web-server/http/response-structs
+    web-server/http/request-structs
+    web-server/http/xexpr
     web-server/templates
+    web-server/servlet-env
 )
 
 ; (define user (get-user (params req 'email) (params req 'password)))
@@ -14,8 +20,7 @@
 (record user id email)
 
 (define (redir-to place (headers '()))
-  (define location (header #"Location" place))
-  `(302 ,(cons location headers) "Redirecting."))
+  (redirect-to place temporarily #:headers headers))
 
 (define (get-user email)
     (if (eq? email #f)
@@ -36,19 +41,30 @@
   (displayln email)
   (get-user email))
 
+(define (response/html htmlstr)
+  (response/full
+    200 #"Okay"
+    (current-seconds) TEXT/HTML-MIME-TYPE
+    '()
+    (list (string->bytes/utf-8 htmlstr))))
+
 (define (index req)
   (define user (get-user-from-cookie req))
   (match user
     ((nothing)
-      (define logintext "not logged in")
-      (include-template "templates/index.html"))
+     (response/html
+       (include-template "templates/index.html")))
     ((just user)
-      (redir-to #"/home"))))
+      (redir-to "/home"))))
+
+(define (home req)
+  (response/xexpr
+    "You should be logged in"))
+;    `(html (body "You should be logged in"))))
 
 (define (login req)
-  (include-template "templates/login.html"))
-
-(define (home) "You should be logged in")
+  (response/html
+    (include-template "templates/login.html")))
 
 (define (signup req)
   (define user (get-user-from-cookie req))
@@ -56,27 +72,45 @@
     ((nothing)
       "TODO")
     ((just user)
-      (redir-to #"/home"))))
+      (redir-to "/home"))))
 
 (define (login-post req)
-  (define email (params req 'email))
-  (define password (params req 'password))
+  (define params
+    (match (request-post-data/raw req)
+      (#f '())
+      (body
+        (make-immutable-hash
+          (url-query (string->url
+                       (string-append "?" (bytes->string/utf-8 body))))))))
+  (define email (dict-ref params 'email))
+  (define password (dict-ref params 'password))
   (define user (get-user email)) ;todo: check password?
   (match user
     ((nothing)
-      (include-template "templates/login.html"))
+     (response/html
+       (include-template "templates/login.html")))
     ((just user)
       (define new-user-cookie (make-cookie-from-user user))
-      (redir-to #"/home" (list (cookie->header new-user-cookie))))))
+      (redir-to "/home" (list (cookie->header new-user-cookie))))))
 
 (define (logout req)
-  (redir-to #"/" (list (cookie->header user-cookie-blank))))
+  (redir-to "/" (list (cookie->header user-cookie-blank))))
 
-(get "/" index)
-(get "/signup" signup)
-(get "/login" login)
-(post "/login" login-post)
-(get "/home" home)
-(get "/logout" logout)
+(define-values (site-dispatch site-url)
+  (dispatch-rules
+    (("") index)
+    (("home") home)
+    (("signup") signup)
+    (("login") #:method "get" login)
+    (("login") #:method "post" login-post)
+    (("logout") logout)
+    ))
 
-(run)
+(serve/servlet site-dispatch
+               #:servlet-path "/"
+               #:servlet-regexp #rx""
+               #:extra-files-paths
+               (list (build-path (current-directory) "static"))
+               ;#:command-line? #t
+               #:launch-browser? #f
+               )
